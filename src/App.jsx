@@ -11,8 +11,10 @@ function App() {
   ];
 
   return (
+   //add pagable to add anable pagination
+   //add filtrable  to add filters
     <>
-      <Grid data ={dummyData} />
+      <Grid data ={dummyData} perPage={3}  pagable/>
     </>
   )
 }
