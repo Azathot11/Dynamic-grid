@@ -1,25 +1,26 @@
-import  { useState, useMemo, useEffect} from "react";
+import  { useState, useMemo,useEffect} from "react";
 import Pagination from "./Pagination";
-function Grid({data,perPage, filtrable,pagable}) {
+function Grid({data,perPage, filtrable,pagable,gridColumns,selectable,selectedHandler}) {
    
 
   const [filters, setFilters] = useState({});
   const  [displayableData, setDisplayableData] = useState([]);
-   const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const columns = useMemo(() => {
+    // console.log(gridColumns)
     if (data.length === 0) return [];
-
-    const columnNames = Object.keys(data[0]);
-    console.log(columnNames)
+  const columnNames = []
+  gridColumns.forEach((item)=>{
+    columnNames.push(item.columnName)
+  })
+    // const columnNames = Object.keys(data[0]);
     const newColumns = columnNames.map((columnName) => {
       const filter = filters[columnName] ? filters[columnName] : "";
       return { columnName, filter };
     });
-
     return newColumns;
   }, [data, filters]);
-
 
   function handleFilterChange(event, columnName) {
     const newFilters = { ...filters, [columnName]: event.target.value };
@@ -27,49 +28,60 @@ function Grid({data,perPage, filtrable,pagable}) {
   }
 
   useEffect(()=>{
-if(!pagable){
-    const filter = {};
-Object.keys(filters).forEach(key => {
-  if (filters[key] !== "") {
-    filter[key] = filters[key].toLowerCase();
+    console.log('executed')
+if (!pagable) {
+  const filter = {};
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== "") {
+      filter[key] = value.toLowerCase();
+    }
+  });
+  const filteredArray = data.filter((item) =>
+    Object.entries(filter).every(([key, value]) =>{      
+            return  item[key].toLowerCase().includes(value)
+    })
+  );
+
+  const reformData =(data)=>{
+  return   data.map((element,i)=>{
+     return {selected:false, gridId:i+1,...element}
+    })
   }
-});
 
-const filteredArray = displayableData.filter((item) =>
-  Object.entries(filter).every(([key, value]) => item[key].toLowerCase().includes(value))
-);
-
-if(Object.keys(filter).length === 0){
-  return  setDisplayableData(data)
-}
-setDisplayableData(filteredArray);
-return 
-}
-
-const filter = {};
-const paginationFun=(array)=>{
+  setDisplayableData(Object.keys(filter).length === 0 ? reformData(data) : reformData(filteredArray));
+} else {
+  const filter = {};
+  const paginationFun = (array) => {
     const indexOfLastItem = currentPage * perPage;
     const indexOfFirstItem = indexOfLastItem - perPage;
-    return array.slice(indexOfFirstItem, indexOfLastItem);
-}
-Object.keys(filters).forEach(key => {
-  if (filters[key] !== "") {
-    filter[key] = filters[key].toLowerCase();
-  }
-});
-
-const filteredArray = data.filter((item) =>
-  Object.entries(filter).every(([key, value]) => item[key].toLowerCase().includes(value))
-);
-
-if(Object.keys(filter).length === 0){
-  return  setDisplayableData(paginationFun(data))
-}
-setDisplayableData(paginationFun(filteredArray))
-
-
+    const newArray = array.map((element,i)=>{ 
+      return { selected:false,gridId:i+1, ...element} 
+    })
    
+    return newArray.slice(indexOfFirstItem, indexOfLastItem);
+  };
+  
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== "") {
+      filter[key] = value.toLowerCase();
+    }
+  });
+  const filteredArray = data.filter((item) =>
+    Object.entries(filter).every(([key, value]) => {
+        console.log(typeof  value)
+        if(typeof value === 'string'){
+            return  item[key].toLowerCase().includes(value)
+        }else{
+            return  item[key].includes(value)
+        }
+      
+    })
+  );
+  setDisplayableData(Object.keys(filter).length === 0 ? paginationFun(data) : paginationFun(filteredArray));
+}
+
 },[filters,currentPage])
+
 
  
 
@@ -77,6 +89,19 @@ setDisplayableData(paginationFun(filteredArray))
     return (
       <thead>
         <tr>
+            {selectable && <th>
+                <input type="checkbox" 
+               onChange={(e) => {
+                setDisplayableData(() => {
+                  return displayableData.map((disData) => {
+                    disData.selected = !disData.selected;
+                    return disData;
+                  });
+                });
+              }}
+
+                />
+            </th>}
           {columns.map((column) => (
             <th key={column.columnName}>
               <div>{column.columnName}</div>
@@ -91,7 +116,20 @@ setDisplayableData(paginationFun(filteredArray))
       </thead>
     );
   }
-
+  
+  if (typeof selectedHandler === 'function') {
+    selectedHandler(selectedValuesHandler())
+  }
+  function selectedValuesHandler(){
+    const selectedValues = []
+    displayableData.forEach(element => {
+       if(element.selected === true){
+        selectedValues.push(element)
+       }
+    })
+console.log(selectedValues)
+    return selectedValues
+  }
   
 
   function renderBody() {
@@ -102,7 +140,22 @@ setDisplayableData(paginationFun(filteredArray))
         {displayableData.map((row, index) => {
           return (
             <tr key={index}>
-              {columns.map((column) => (
+               {selectable && <td>
+                    <input type="checkbox"
+                     onChange={(e) => {
+                        setDisplayableData(() => {
+                          return displayableData.map((disData) => {
+                            if (row.gridId === disData.gridId) {
+                                disData.selected = !disData.selected;
+                            }
+                            return disData;
+                          });
+                        });
+                      }}
+                      checked={row?.selected}
+                    />
+                    </td>}
+              {gridColumns.map((column) => (
                 <td key={`${index}-${column.columnName}`}>{row[column.columnName]}</td>
               ))}
             </tr>

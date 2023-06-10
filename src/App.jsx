@@ -10,11 +10,23 @@ function App() {
     {name: 'Alice', age: 26, email: 'alice@example.com'},
   ];
 
+  const columns = [
+    {title: 'Name', columnName: 'name', filter: ''},
+    {title: 'Age', columnName: 'age', filter: ''},
+    {title: 'Email', columnName: 'email', filter: ''},
+  ]
+  const selectedHandler =(values)=>{
+    console.log(values)
+  }
   return (
    //add pagable to add anable pagination
    //add filtrable  to add filters
+   //selectable to activate the select boxes
+   //selectedHandler a function that get the selected values
+
     <>
-      <Grid data ={dummyData} perPage={3}  pagable/>
+      <Grid data ={dummyData} gridColumns={columns} perPage={3} filtrable={true} pagable  selectable/>
+     
     </>
   )
 }
