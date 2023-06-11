@@ -37,25 +37,20 @@ function Grid({
   }
 
   useEffect(() => {
-    const sortedColumn=(data)=>{
-     
-        return data.sort((a, b) => {
+    const sortedColumn = (data) => {
+      return data.sort((a, b) => {
         if (sortDirection === "asc") {
-          if (typeof a[sortColumn] === 'string') {
-            return a[sortColumn].localeCompare(b[sortColumn]);
-          } else {
-            return a[sortColumn] - b[sortColumn];
-          }
+          return typeof a[sortColumn] === 'string'
+            ? a[sortColumn].localeCompare(b[sortColumn])
+            : a[sortColumn] - b[sortColumn];
         } else {
-          if (typeof b[sortColumn] === 'string') {
-            return b[sortColumn].localeCompare(a[sortColumn]);
-          } else {
-            return b[sortColumn] - a[sortColumn];
-          }
+          return typeof b[sortColumn] === 'string'
+            ? b[sortColumn].localeCompare(a[sortColumn])
+            : b[sortColumn] - a[sortColumn];
         }
-         });  
-       
-    }
+      });
+    };
+    
     if (!pagable) {
       const filter = {};
       Object.entries(filters).forEach(([key, value]) => {
@@ -64,26 +59,23 @@ function Grid({
         }
       });
       const filteredArray = data.filter((item) =>
-        Object.entries(filter).every(([key, value]) => {
-          return typeof item[key] === "string" ? item[key].toLowerCase().includes(value) : item[key] === +value;
-        })
+        Object.entries(filter).every(([key, value]) =>
+          typeof item[key] === "string"
+            ? item[key].toLowerCase().includes(value)
+            : item[key] === +value
+        )
       );
-
+    
       const reformData = (data) => {
-        const sortedArray = sortedColumn(data)
-        console.log(sortedArray)
-        return sortedArray.map((element, i) => {
-          return { selected: false, gridId: i + 1, ...element };
-        });
+        const sortedArray = sortedColumn(data);
+        return sortedArray.map((element, i) => ({
+          selected: false,
+          gridId: i + 1,
+          ...element
+        }));
       };
-
-      if(Object.keys(filter).length === 0){
-        setTotalItem(data.length)
-      }else{
-        setTotalItem(filteredArray.length)
-
-      }
-
+    
+      setTotalItem(Object.keys(filter).length === 0 ? data.length : filteredArray.length);
       setDisplayableData(
         Object.keys(filter).length === 0
           ? reformData(data)
@@ -94,27 +86,30 @@ function Grid({
       const paginationFun = (array) => {
         const indexOfLastItem = currentPage * perPage;
         const indexOfFirstItem = indexOfLastItem - perPage;
-
-        const sortedArray = sortedColumn(array)
-        // console.log(sortedArray)
-        const newArray = sortedArray.map((element, i) => {
-          return { selected: false, gridId: i + 1, ...element };
-        });
-        setTotalItem(sortedArray.length)
+    
+        const sortedArray = sortedColumn(array);
+        const newArray = sortedArray.map((element, i) => ({
+          selected: false,
+          gridId: i + 1,
+          ...element
+        }));
+        setTotalItem(sortedArray.length);
         return newArray.slice(indexOfFirstItem, indexOfLastItem);
       };
-
+    
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== "") {
           filter[key] = value.toLowerCase();
         }
       });
       const filteredArray = data.filter((item) =>
-        Object.entries(filter).every(([key, value]) => {
-          return typeof item[key] === "string" ? item[key].toLowerCase().includes(value) : item[key] === +value;
-        })
+        Object.entries(filter).every(([key, value]) =>
+          typeof item[key] === "string"
+            ? item[key].toLowerCase().includes(value)
+            : item[key] === +value
+        )
       );
-
+    
       setDisplayableData(
         Object.keys(filter).length === 0
           ? paginationFun(data)
@@ -150,7 +145,7 @@ function Grid({
              >
               <div className="flex gap-2 items-center">
               <div>{column.title}</div>
-             {sorting && <div className="" onClick={()=>{setSortColumn(column.columnName);setSortDirection((value)=>{
+             {sorting && <div className="cursor-pointer" onClick={()=>{setSortColumn(column.columnName);setSortDirection((value)=>{
                 if(value === 'asc'){
                   return 'desc'
                 }else{
@@ -203,7 +198,7 @@ function Grid({
     // const filteredDataArray = filteredData();
 
     return (
-      <tbody>
+      <tbody className="">
         {displayableData.length === 0 && (
           <>
             <tr className="border-b bg-neutral-100 dark:border-neutral-500 dark:bg-neutral-700">
@@ -285,7 +280,7 @@ function Grid({
 
   return (
     <>
-      <table className="min-w-full text-left text-sm font-light text-white">
+      <table className="min-w-full text-left text-sm font-light text-white table-auto">
         {renderHeader()}
         {renderBody()}
         {renderFooter()}
