@@ -21,8 +21,8 @@ function Grid({
 
 
   const columns = useMemo(() => {
-    if (data.length === 0) return [];
-    const newColumns = gridColumns.map((element) => {
+    if (data?.length === 0) return [];
+    const newColumns = gridColumns?.map((element) => {
       const filter = filters[element.columnName] ? filters[element.columnName] : "";
      
       return { columnName:element.columnName, filter, title:element.title };
@@ -139,7 +139,7 @@ function Grid({
               />
             </th>
           )}
-          {columns.map((column) => (
+          {columns?.map((column) => (
           <th scope="col" className=" px-6 py-4"
             key={column.columnName}
              >
@@ -158,7 +158,7 @@ function Grid({
         </tr>
         <tr className="border">
         { selectable && <th></th>}
-        {columns.map((column) => (
+        {columns?.map((column) => (
              <th scope="col" className=" px-6 py-4"
             
             key={column.columnName}
@@ -232,7 +232,7 @@ function Grid({
                      />
                    </td>
                  )}
-                 {gridColumns.map((column) => (
+                 {gridColumns?.map((column) => (
                    <td
                      className="whitespace-nowrap px-6 py-4"
                      key={`${index}-${column.columnName}`}
